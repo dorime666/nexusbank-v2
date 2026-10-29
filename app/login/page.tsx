@@ -1,21 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Lock, User, ShieldCheck, AlertCircle } from "lucide-react";
-import { setAuthenticated, checkIsAuthenticated } from "@/lib/auth";
+import { setAuthenticated } from "@/lib/auth";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
-  // Auto-redirect if already authenticated
-  useEffect(() => {
-    if (checkIsAuthenticated()) {
-      window.location.replace("/");
-    }
-  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,8 +17,8 @@ export default function LoginPage() {
 
     if (username.trim() === "Ravithabura" && password === "Habura4123") {
       setAuthenticated(true);
-      // Hard navigation ensures mobile browsers pull the full active session
-      window.location.replace("/");
+      // Hard redirect to break static CDN caching and open the dashboard
+      window.location.href = "/";
     } else {
       setIsLoading(false);
       setError("Invalid credentials. Please check your username and password.");

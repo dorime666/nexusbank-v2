@@ -30,11 +30,10 @@ export default function DashboardPage() {
 
  useEffect(() => {
     setIsMounted(true);
-    const authStatus = checkIsAuthenticated();
-    if (!authStatus) {
-      window.location.replace("/login");
+    if (!checkIsAuthenticated()) {
+      router.replace("/login");
     }
-  }, []);
+  }, [router]);
 
   const handleLogout = () => {
     setAuthenticated(false);
