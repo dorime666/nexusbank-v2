@@ -10,15 +10,14 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
     if (username.trim() === "Ravithabura" && password === "Habura4123") {
       setAuthenticated(true);
-      // Hard redirect to break static CDN caching and open the dashboard
-      window.location.href = "/";
+      window.location.assign("/");
     } else {
       setIsLoading(false);
       setError("Invalid credentials. Please check your username and password.");
