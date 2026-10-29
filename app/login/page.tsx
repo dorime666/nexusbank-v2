@@ -1,62 +1,65 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Lock, User, ShieldCheck, ArrowRight, AlertCircle } from "lucide-react";
-import { DEMO_CREDENTIALS, setAuthenticated } from "@/lib/auth";
+import React, { useState, useEffect } from "react";
+import { Lock, User, ShieldCheck, AlertCircle } from "lucide-react";
+import { setAuthenticated, checkIsAuthenticated } from "@/lib/auth";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
- const handleLogin = (e: React.FormEvent) => {
+  // Auto-redirect if already authenticated
+  useEffect(() => {
+    if (checkIsAuthenticated()) {
+      window.location.replace("/");
+    }
+  }, []);
+
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
-    setTimeout(() => {
-      if (
-        username.trim().toLowerCase() === DEMO_CREDENTIALS.username.toLowerCase() &&
-        password === DEMO_CREDENTIALS.password
-      ) {
-        setAuthenticated(true);
-        router.push("/");
-      } else {
-        setError("Invalid username or password.");
-        setIsLoading(false);
-      }
-    }, 600);
+    if (username.trim() === "Ravithabura" && password === "Habura4123") {
+      setAuthenticated(true);
+      // Hard navigation ensures mobile browsers pull the full active session
+      window.location.replace("/");
+    } else {
+      setIsLoading(false);
+      setError("Invalid credentials. Please check your username and password.");
+    }
   };
 
   return (
-    <div className="flex flex-col justify-center min-h-[80vh] px-2 py-4">
-      <div className="bg-[#1B2235] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-        
-        {/* Header */}
-        <div className="text-center mb-8 relative z-10">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#8275FF]/10 border border-[#8275FF]/30 text-[#8275FF] mb-4">
-            <ShieldCheck className="w-6 h-6" />
-          </div>
-          <h1 className="text-xl font-bold tracking-tight text-white">Nexus Bank Portal</h1>
-          <p className="text-xs text-[#8E9BAE] mt-1">Sign in to your account dashboard</p>
+    <div className="min-h-screen flex flex-col justify-center px-4 py-8">
+      <div className="text-center mb-8 space-y-2">
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#8275FF] to-[#E34A9B] flex items-center justify-center mx-auto shadow-lg shadow-[#8275FF]/20">
+          <ShieldCheck className="w-8 h-8 text-white" />
+        </div>
+        <h1 className="text-2xl font-black text-white tracking-tight">NEXUS BANK</h1>
+        <p className="text-xs text-[#8E9BAE] uppercase tracking-widest font-semibold">
+          Secure Portal Access
+        </p>
+      </div>
+
+      <div className="bg-[#1B2235] border border-white/10 rounded-2xl p-6 shadow-2xl space-y-5">
+        <div className="border-b border-white/10 pb-3">
+          <h2 className="text-sm font-bold text-white">Sign In to Your Account</h2>
+          <p className="text-xs text-[#8E9BAE] mt-0.5">Enter account credentials below</p>
         </div>
 
-        {/* Error message */}
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500/30 rounded-xl p-3 flex items-center gap-3 text-red-400 text-xs">
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-red-400 text-xs flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
-        {/* Form */}
-        <form onSubmit={handleLogin} className="space-y-4 relative z-10">
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#8E9BAE] mb-1.5 uppercase tracking-wider">
+            <label className="block text-xs font-semibold text-[#8E9BAE] mb-1.5 uppercase tracking-wider">
               Username
             </label>
             <div className="relative">
@@ -75,7 +78,7 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#8E9BAE] mb-1.5 uppercase tracking-wider">
+            <label className="block text-xs font-semibold text-[#8E9BAE] mb-1.5 uppercase tracking-wider">
               Password
             </label>
             <div className="relative">
@@ -83,35 +86,25 @@ export default function LoginPage() {
                 <Lock className="w-4 h-4" />
               </span>
               <input
-                type={showPassword ? "text" : "password"}
+                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password"
                 required
-                className="w-full pl-10 pr-12 py-3 bg-[#0B1020] border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#8275FF] transition-colors"
+                className="w-full pl-10 pr-4 py-3 bg-[#0B1020] border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#8275FF] transition-colors"
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#8E9BAE] hover:text-white transition-colors"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
             </div>
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full mt-2 py-3.5 px-4 bg-[#8275FF] hover:bg-[#7264f0] active:scale-[0.99] transition-all text-white font-medium rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
+            className="w-full py-3.5 px-4 bg-gradient-to-r from-[#8275FF] to-[#E34A9B] hover:opacity-90 active:scale-[0.99] text-white font-bold rounded-xl text-sm transition-all shadow-lg flex items-center justify-center gap-2 mt-2"
           >
             {isLoading ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              <>
-                <span>Sign In</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
+              <span>Sign In</span>
             )}
           </button>
         </form>

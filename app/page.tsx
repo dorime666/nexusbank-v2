@@ -28,12 +28,13 @@ export default function DashboardPage() {
   const [showConverter, setShowConverter] = useState(false);
   const [usdtAmount, setUsdtAmount] = useState("100");
 
-  useEffect(() => {
+ useEffect(() => {
     setIsMounted(true);
-    if (!checkIsAuthenticated()) {
-      router.push("/login");
+    const authStatus = checkIsAuthenticated();
+    if (!authStatus) {
+      window.location.replace("/login");
     }
-  }, [router]);
+  }, []);
 
   const handleLogout = () => {
     setAuthenticated(false);
