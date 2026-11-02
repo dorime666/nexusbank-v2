@@ -13,22 +13,61 @@ import {
   CheckCircle2, 
   Coins,
   LogOut,
-  X
+  X,
+  ArrowDownLeft
 } from "lucide-react";
 import { checkIsAuthenticated, setAuthenticated } from "@/lib/auth";
-import { initialUserData, initialTransactions } from "@/data/mockData";
+import { initialUserData } from "@/data/mockData";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [userData] = useState(initialUserData);
-  const [transactions] = useState(initialTransactions);
   const [isMounted, setIsMounted] = useState(false);
 
   // Converter Modal State
   const [showConverter, setShowConverter] = useState(false);
   const [usdtAmount, setUsdtAmount] = useState("100");
 
- useEffect(() => {
+  // Real-time counter for Transaction 1 (2 months, 2 weeks ago)
+  const [elapsedTx1, setElapsedTx1] = useState(74 * 24 * 60 * 60 + 14 * 60);
+  
+  // Real-time counter for Transaction 2 (Starting at 5 minutes = 300 seconds ago)
+  const [elapsedTx2, setElapsedTx2] = useState(300);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setElapsedTx1((prev) => prev + 1);
+      setElapsedTx2((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatBackdatedTime = (totalSeconds: number, isShort: boolean = false) => {
+    if (isShort && totalSeconds < 3600) {
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      return `${minutes}m ${seconds}s ago`;
+    }
+
+    const months = Math.floor(totalSeconds / (30 * 24 * 60 * 60));
+    const remainderAfterMonths = totalSeconds % (30 * 24 * 60 * 60);
+    const weeks = Math.floor(remainderAfterMonths / (7 * 24 * 60 * 60));
+    const remainderAfterWeeks = remainderAfterMonths % (7 * 24 * 60 * 60);
+    const days = Math.floor(remainderAfterWeeks / (24 * 60 * 60));
+    const hours = Math.floor((remainderAfterWeeks % (24 * 60 * 60)) / 3600);
+    const minutes = Math.floor((remainderAfterWeeks % 3600) / 60);
+    const seconds = remainderAfterWeeks % 60;
+
+    let parts = [];
+    if (months > 0) parts.push(`${months}m`);
+    if (weeks > 0) parts.push(`${weeks}w`);
+    if (months === 0 && weeks === 0 && days > 0) parts.push(`${days}d`);
+    parts.push(`${hours}h ${minutes}m ${seconds}s`);
+
+    return `${parts.join(' ')} ago`;
+  };
+
+  useEffect(() => {
     setIsMounted(true);
     if (!checkIsAuthenticated()) {
       router.replace("/login");
@@ -37,7 +76,7 @@ export default function DashboardPage() {
 
   const handleLogout = () => {
     setAuthenticated(false);
-    router.push("/login");
+    router.replace("/login");
   };
 
   if (!isMounted) return null;
@@ -92,7 +131,7 @@ export default function DashboardPage() {
             <div className="w-7 h-7 rounded-lg bg-[#8275FF]/15 text-[#8275FF] flex items-center justify-center">
               <CreditCard className="w-4 h-4" />
             </div>
-            <span className="leading-tight uppercase">TODAY'S CARD EXPENSES</span>
+            <span className="leading-tight uppercase">TODAY'S EXPENSES</span>
           </div>
 
           <div className="mt-3">
@@ -111,7 +150,7 @@ export default function DashboardPage() {
             <div className="w-7 h-7 rounded-lg bg-[#E34A9B]/15 text-[#E34A9B] flex items-center justify-center">
               <Wallet className="w-4 h-4" />
             </div>
-            <span className="leading-tight uppercase">CURRENTLY IN MY ACCOUNT</span>
+            <span className="leading-tight uppercase">ACCOUNT BALANCE</span>
           </div>
 
           <div className="mt-3">
@@ -125,26 +164,34 @@ export default function DashboardPage() {
 
       </div>
 
-      {/* Quick Action Controls (Row 2 - Updated: 2 Primary Actions) */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* Quick Action Controls */}
+      <div className="grid grid-cols-3 gap-2.5">
         <button 
           onClick={() => setShowConverter(true)}
-          className="bg-[#1B2235] border border-white/10 hover:border-[#8275FF]/50 text-white rounded-xl py-3.5 px-3 flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-[0.98]"
+          className="bg-[#1B2235] border border-white/10 hover:border-[#8275FF]/50 text-white rounded-xl py-3 px-2 flex flex-col items-center justify-center gap-1.5 text-[11px] font-semibold transition-all active:scale-[0.98]"
         >
           <RefreshCw className="w-4 h-4 text-[#8275FF]" />
-          <span>USDT - USD Converter</span>
+          <span>Converter</span>
+        </button>
+
+        <button 
+          onClick={() => router.push("/deposit")}
+          className="bg-[#1B2235] border border-white/10 hover:border-[#45C5AE]/50 text-white rounded-xl py-3 px-2 flex flex-col items-center justify-center gap-1.5 text-[11px] font-semibold transition-all active:scale-[0.98]"
+        >
+          <Coins className="w-4 h-4 text-[#45C5AE]" />
+          <span>Fund Crypto</span>
         </button>
 
         <button 
           onClick={() => router.push("/transfer")}
-          className="bg-[#1B2235] border border-[#8275FF]/40 hover:border-[#8275FF] text-white rounded-xl py-3.5 px-3 flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-[0.98] shadow-md shadow-[#8275FF]/10"
+          className="bg-[#1B2235] border border-[#8275FF]/40 hover:border-[#8275FF] text-white rounded-xl py-3 px-2 flex flex-col items-center justify-center gap-1.5 text-[11px] font-semibold transition-all active:scale-[0.98] shadow-md shadow-[#8275FF]/10"
         >
-          <span>Quick Transfer</span>
           <ExternalLink className="w-4 h-4 text-[#E34A9B]" />
+          <span>Transfer</span>
         </button>
       </div>
 
-      {/* Recent Transactions Section */}
+      {/* Recent Transactions Section with Real-Time Backdated Counters */}
       <div className="space-y-3 pt-2">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
@@ -153,35 +200,70 @@ export default function DashboardPage() {
           </h3>
         </div>
 
-        {transactions.map((tx) => (
-          <div key={tx.id} className="bg-[#1B2235] border border-white/10 rounded-2xl p-4 flex items-center justify-between relative shadow-lg">
-            
-            <div className="space-y-1">
-              <p className="text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider">{tx.title}</p>
-              <div className="text-2xl font-black text-white flex items-baseline gap-1">
-                {tx.currency}{tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </div>
-              <div className="flex items-center gap-2 text-[11px] pt-1">
-                <span className="text-[#45C5AE] flex items-center gap-1 font-medium">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  {tx.status}
-                </span>
-                <span className="text-[#8E9BAE]">{tx.timestamp}</span>
-              </div>
+        {/* Transaction 1: Primary Account Credit */}
+        <div className="bg-[#1B2235] border border-white/10 rounded-2xl p-4 flex items-center justify-between relative shadow-lg">
+          <div className="space-y-1">
+            <p className="text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider flex items-center gap-1">
+              <ArrowDownLeft className="w-3 h-3 text-[#45C5AE]" />
+              PAYMENT RECEIVED
+            </p>
+            <div className="text-2xl font-black text-white flex items-baseline gap-1">
+              $63,120.00
             </div>
-
-            <div className="flex flex-col items-end justify-between self-stretch">
-              <div className="w-10 h-10 rounded-full bg-[#E7B83D]/20 border border-[#E7B83D]/40 flex items-center justify-center text-[#E7B83D]">
-                <Coins className="w-5 h-5" />
-              </div>
-
-              <span className="text-[10px] bg-[#45C5AE]/10 border border-[#45C5AE]/30 text-[#45C5AE] px-2.5 py-1 rounded-full font-semibold uppercase tracking-wider">
-                {tx.category}
+            <div className="flex items-center gap-2 text-[11px] pt-1">
+              <span className="text-[#45C5AE] flex items-center gap-1 font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Confirmed
+              </span>
+              <span className="text-[#8E9BAE] font-mono text-[10px]">
+                {formatBackdatedTime(elapsedTx1)}
               </span>
             </div>
-
           </div>
-        ))}
+
+          <div className="flex flex-col items-end justify-between self-stretch">
+            <div className="w-10 h-10 rounded-full bg-[#E7B83D]/20 border border-[#E7B83D]/40 flex items-center justify-center text-[#E7B83D]">
+              <Coins className="w-5 h-5" />
+            </div>
+
+            <span className="text-[10px] bg-[#45C5AE]/10 border border-[#45C5AE]/30 text-[#45C5AE] px-2.5 py-1 rounded-full font-semibold uppercase tracking-wider">
+              CHECKING ACTIVITY
+            </span>
+          </div>
+        </div>
+
+        {/* Transaction 2: Incoming $1k Crypto Deposit (Starts at 5 mins ago and counts up) */}
+        <div className="bg-[#1B2235] border border-white/10 rounded-2xl p-4 flex items-center justify-between relative shadow-lg">
+          <div className="space-y-1">
+            <p className="text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider flex items-center gap-1">
+              <ArrowDownLeft className="w-3 h-3 text-[#45C5AE]" />
+              INCOMING CRYPTO DEPOSIT
+            </p>
+            <div className="text-2xl font-black text-white flex items-baseline gap-1">
+              $1,000.00
+            </div>
+            <div className="flex items-center gap-2 text-[11px] pt-1">
+              <span className="text-[#45C5AE] flex items-center gap-1 font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Network Settled
+              </span>
+              <span className="text-[#8E9BAE] font-mono text-[10px]">
+                {formatBackdatedTime(elapsedTx2, true)}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-end justify-between self-stretch">
+            <div className="w-10 h-10 rounded-full bg-[#45C5AE]/20 border border-[#45C5AE]/40 flex items-center justify-center text-[#45C5AE]">
+              <span className="text-base font-bold">₮</span>
+            </div>
+
+            <span className="text-[10px] bg-[#45C5AE]/10 border border-[#45C5AE]/30 text-[#45C5AE] px-2.5 py-1 rounded-full font-semibold uppercase tracking-wider">
+              TRC20 VAULT
+            </span>
+          </div>
+        </div>
+
       </div>
 
       {/* Session Controls */}
@@ -232,7 +314,7 @@ export default function DashboardPage() {
 
             <button
               onClick={() => setShowConverter(false)}
-              className="w-full py-3 bg-[#8275FF] text-white font-semibold rounded-xl text-xs"
+              className="w-full py-3 bg-[#8275FF] hover:bg-[#8275FF]/90 text-white font-semibold rounded-xl text-xs transition-colors"
             >
               Close Converter
             </button>
