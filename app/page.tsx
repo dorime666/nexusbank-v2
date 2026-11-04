@@ -28,45 +28,6 @@ export default function DashboardPage() {
   const [showConverter, setShowConverter] = useState(false);
   const [usdtAmount, setUsdtAmount] = useState("100");
 
-  // Real-time counter for Transaction 1 (2 months, 2 weeks ago)
-  const [elapsedTx1, setElapsedTx1] = useState(74 * 24 * 60 * 60 + 14 * 60);
-  
-  // Real-time counter for Transaction 2 (Starting at 5 minutes = 300 seconds ago)
-  const [elapsedTx2, setElapsedTx2] = useState(300);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setElapsedTx1((prev) => prev + 1);
-      setElapsedTx2((prev) => prev + 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const formatBackdatedTime = (totalSeconds: number, isShort: boolean = false) => {
-    if (isShort && totalSeconds < 3600) {
-      const minutes = Math.floor(totalSeconds / 60);
-      const seconds = totalSeconds % 60;
-      return `${minutes}m ${seconds}s ago`;
-    }
-
-    const months = Math.floor(totalSeconds / (30 * 24 * 60 * 60));
-    const remainderAfterMonths = totalSeconds % (30 * 24 * 60 * 60);
-    const weeks = Math.floor(remainderAfterMonths / (7 * 24 * 60 * 60));
-    const remainderAfterWeeks = remainderAfterMonths % (7 * 24 * 60 * 60);
-    const days = Math.floor(remainderAfterWeeks / (24 * 60 * 60));
-    const hours = Math.floor((remainderAfterWeeks % (24 * 60 * 60)) / 3600);
-    const minutes = Math.floor((remainderAfterWeeks % 3600) / 60);
-    const seconds = remainderAfterWeeks % 60;
-
-    let parts = [];
-    if (months > 0) parts.push(`${months}m`);
-    if (weeks > 0) parts.push(`${weeks}w`);
-    if (months === 0 && weeks === 0 && days > 0) parts.push(`${days}d`);
-    parts.push(`${hours}h ${minutes}m ${seconds}s`);
-
-    return `${parts.join(' ')} ago`;
-  };
-
   useEffect(() => {
     setIsMounted(true);
     if (!checkIsAuthenticated()) {
@@ -114,7 +75,7 @@ export default function DashboardPage() {
 
       {/* Account Status Meta Bar */}
       <div className="flex items-center justify-between text-xs text-[#8E9BAE] px-1">
-        <span>Updated Now</span>
+        <span>Updated</span>
         <div className="flex items-center gap-1.5 text-[#45C5AE] font-medium">
           <span>SECURE ACCOUNT</span>
           <ShieldCheck className="w-4 h-4" />
@@ -191,7 +152,7 @@ export default function DashboardPage() {
         </button>
       </div>
 
-      {/* Recent Transactions Section with Real-Time Backdated Counters */}
+      {/* Recent Transactions Section */}
       <div className="space-y-3 pt-2">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
@@ -215,9 +176,7 @@ export default function DashboardPage() {
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 Confirmed
               </span>
-              <span className="text-[#8E9BAE] font-mono text-[10px]">
-                {formatBackdatedTime(elapsedTx1)}
-              </span>
+              
             </div>
           </div>
 
@@ -232,24 +191,22 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Transaction 2: Incoming $1k Crypto Deposit (Starts at 5 mins ago and counts up) */}
+        {/* Transaction 2: Crypto Received $1,000.00 */}
         <div className="bg-[#1B2235] border border-white/10 rounded-2xl p-4 flex items-center justify-between relative shadow-lg">
           <div className="space-y-1">
             <p className="text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider flex items-center gap-1">
               <ArrowDownLeft className="w-3 h-3 text-[#45C5AE]" />
-              INCOMING CRYPTO DEPOSIT
+              CRYPTO RECEIVED
             </p>
             <div className="text-2xl font-black text-white flex items-baseline gap-1">
-              $1,000.00
+              +$1,000.00
             </div>
             <div className="flex items-center gap-2 text-[11px] pt-1">
               <span className="text-[#45C5AE] flex items-center gap-1 font-medium">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                Network Settled
+                Confirmed
               </span>
-              <span className="text-[#8E9BAE] font-mono text-[10px]">
-                {formatBackdatedTime(elapsedTx2, true)}
-              </span>
+              
             </div>
           </div>
 
@@ -259,7 +216,7 @@ export default function DashboardPage() {
             </div>
 
             <span className="text-[10px] bg-[#45C5AE]/10 border border-[#45C5AE]/30 text-[#45C5AE] px-2.5 py-1 rounded-full font-semibold uppercase tracking-wider">
-              TRC20 VAULT
+              TRC20 RECEIVED
             </span>
           </div>
         </div>
