@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Copy, Check, ShieldCheck, Coins, QrCode } from "lucide-react";
+import { ArrowLeft, Copy, Check, ShieldCheck, Coins } from "lucide-react";
+import QRCode from "react-qr-code";
 
 export default function DepositPage() {
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function DepositPage() {
     },
     {
       name: "Ethereum (ETH)",
-      network: "ERC20 (Ethereum)",
+      network: "ERC20 (Ethereum Network)",
       address: "0x691ea0f813de199c8349134f15da16b0b5e6aa94",
       icon: "Ξ",
       color: "from-purple-500/20 to-indigo-500/20",
@@ -63,12 +64,12 @@ export default function DepositPage() {
         </div>
       </div>
 
-      {/* Wallet List */}
+      {/* Wallet List with Real QR Codes */}
       <div className="space-y-4">
         {wallets.map((wallet, idx) => (
           <div
             key={idx}
-            className={`bg-[#1B2235] border ${wallet.borderColor} rounded-2xl p-5 space-y-3 relative overflow-hidden shadow-xl`}
+            className={`bg-[#1B2235] border ${wallet.borderColor} rounded-2xl p-5 space-y-4 relative overflow-hidden shadow-xl`}
           >
             <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${wallet.color} rounded-full blur-2xl pointer-events-none`} />
 
@@ -84,13 +85,26 @@ export default function DepositPage() {
                   </span>
                 </div>
               </div>
-
-              <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[#8E9BAE]">
-                <QrCode className="w-4 h-4" />
-              </div>
             </div>
 
-            <div className="space-y-1.5 pt-1">
+            {/* Real Dynamic QR Code Container */}
+            <div className="flex flex-col items-center justify-center bg-[#0B1020] border border-white/10 rounded-xl p-4 space-y-2">
+              <div className="p-3 bg-white rounded-xl shadow-inner">
+                <QRCode
+                  value={wallet.address}
+                  size={140}
+                  bgColor="#FFFFFF"
+                  fgColor="#000000"
+                  level="H"
+                />
+              </div>
+              <p className="text-[10px] text-[#8E9BAE] uppercase font-semibold tracking-wider pt-1">
+                Scan with wallet camera to transfer
+              </p>
+            </div>
+
+            {/* Wallet Address & Copy Button */}
+            <div className="space-y-1.5">
               <label className="text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider">
                 Deposit Address
               </label>
