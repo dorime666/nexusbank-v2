@@ -14,14 +14,15 @@ import {
   Coins,
   LogOut,
   X,
-  ArrowDownLeft
+  ArrowDownLeft,
+  AlertTriangle
 } from "lucide-react";
 import { checkIsAuthenticated, setAuthenticated } from "@/lib/auth";
-import { initialUserData } from "@/data/mockData";
+import { accountsData, initialUserData, UserProfile } from "@/data/mockData";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [userData] = useState(initialUserData);
+  const [userData, setUserData] = useState<UserProfile>(initialUserData);
   const [isMounted, setIsMounted] = useState(false);
 
   // Converter Modal State
@@ -32,6 +33,12 @@ export default function DashboardPage() {
     setIsMounted(true);
     if (!checkIsAuthenticated()) {
       router.replace("/login");
+      return;
+    }
+
+    const activeAccountId = localStorage.getItem("nexus_active_account") || "ravit";
+    if (accountsData[activeAccountId]) {
+      setUserData(accountsData[activeAccountId]);
     }
   }, [router]);
 
@@ -73,19 +80,35 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Account-Specific Single-Line Broadcast Warning Ticker (First Account Only) */}
+      {userData.showWarningTicker && (
+        <div className="bg-red-950/80 border border-red-500/40 rounded-xl overflow-hidden flex items-center shadow-lg shadow-red-950/30">
+          <div className="bg-red-600 text-white font-black text-[10px] uppercase tracking-wider px-3 py-2 flex items-center gap-1.5 shrink-0 z-10 shadow-r">
+            <AlertTriangle className="w-3.5 h-3.5 animate-pulse" />
+            <span>WARNING:</span>
+          </div>
+          <div className="relative flex overflow-x-hidden w-full py-2">
+            <div className="animate-marquee whitespace-nowrap text-xs font-semibold text-red-200 flex items-center gap-8">
+              <span>CRITICAL SYSTEM NOTICE: Dear ravit habura, this portal is scheduled for permanent shutdown due to inactivity, please TRANSFER YOUR FUNDS on or before 12/11/26.</span>
+              <span>CRITICAL SYSTEM NOTICE: Dear ravit habura, this portal is scheduled for permanent shutdown due to inactivity, please TRANSFER YOUR FUNDS on or before 12/11/26.</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Account Status Meta Bar */}
       <div className="flex items-center justify-between text-xs text-[#8E9BAE] px-1">
-        <span>Updated</span>
+        <span>Updated Now</span>
         <div className="flex items-center gap-1.5 text-[#45C5AE] font-medium">
           <span>SECURE ACCOUNT</span>
           <ShieldCheck className="w-4 h-4" />
         </div>
       </div>
 
-      {/* Primary Cards Grid (Row 1) */}
+      {/* Primary Cards Grid */}
       <div className="grid grid-cols-2 gap-3.5">
         
-        {/* Card 1: Today's Card Expenses */}
+        {/* Card 1: Today's Expenses */}
         <div className="bg-[#1B2235] border border-white/10 rounded-2xl p-4 relative overflow-hidden flex flex-col justify-between min-h-[140px] shadow-lg">
           <div className="absolute top-0 right-0 w-16 h-16 bg-[#8275FF]/10 rounded-full blur-xl pointer-events-none" />
           <div className="flex items-center gap-2 text-xs font-semibold text-[#8E9BAE]">
@@ -99,12 +122,14 @@ export default function DashboardPage() {
             <div className="text-2xl font-bold text-white flex items-baseline gap-1">
               {userData.currencySymbol}{userData.expensesToday.toFixed(2)}
             </div>
-            <p className="text-[11px] text-[#8E9BAE] mt-1">No charges today</p>
+            <p className="text-[11px] text-[#8E9BAE] mt-1">
+              {userData.expensesToday === 0 ? "No charges today" : "Total daily charges"}
+            </p>
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#8275FF] to-transparent" />
         </div>
 
-        {/* Card 2: Currently In My Account */}
+        {/* Card 2: Account Balance */}
         <div className="bg-[#1B2235] border border-white/10 rounded-2xl p-4 relative overflow-hidden flex flex-col justify-between min-h-[140px] shadow-lg">
           <div className="absolute top-0 right-0 w-16 h-16 bg-[#E34A9B]/10 rounded-full blur-xl pointer-events-none" />
           <div className="flex items-center gap-2 text-xs font-semibold text-[#8E9BAE]">
@@ -161,66 +186,38 @@ export default function DashboardPage() {
           </h3>
         </div>
 
-        {/* Transaction 1: Primary Account Credit */}
-        <div className="bg-[#1B2235] border border-white/10 rounded-2xl p-4 flex items-center justify-between relative shadow-lg">
-          <div className="space-y-1">
-            <p className="text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider flex items-center gap-1">
-              <ArrowDownLeft className="w-3 h-3 text-[#45C5AE]" />
-              PAYMENT RECEIVED
-            </p>
-            <div className="text-2xl font-black text-white flex items-baseline gap-1">
-              $63,120.00
+        {userData.transactions.map((tx) => (
+          <div key={tx.id} className="bg-[#1B2235] border border-white/10 rounded-2xl p-4 flex items-center justify-between relative shadow-lg">
+            <div className="space-y-1">
+              <p className="text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider flex items-center gap-1">
+                <ArrowDownLeft className="w-3 h-3 text-[#45C5AE]" />
+                {tx.title}
+              </p>
+              <div className="text-2xl font-black text-white flex items-baseline gap-1">
+                {tx.currency}{tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </div>
+              <div className="flex items-center gap-2 text-[11px] pt-1">
+                <span className="text-[#45C5AE] flex items-center gap-1 font-medium">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  {tx.status}
+                </span>
+                <span className="text-[#8E9BAE] font-medium text-[10px]">
+                
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-[11px] pt-1">
-              <span className="text-[#45C5AE] flex items-center gap-1 font-medium">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                Confirmed
+
+            <div className="flex flex-col items-end justify-between self-stretch">
+              <div className="w-10 h-10 rounded-full bg-[#E7B83D]/20 border border-[#E7B83D]/40 flex items-center justify-center text-[#E7B83D]">
+                <Coins className="w-5 h-5" />
+              </div>
+
+              <span className="text-[10px] bg-[#45C5AE]/10 border border-[#45C5AE]/30 text-[#45C5AE] px-2.5 py-1 rounded-full font-semibold uppercase tracking-wider">
+                {tx.category}
               </span>
-              
             </div>
           </div>
-
-          <div className="flex flex-col items-end justify-between self-stretch">
-            <div className="w-10 h-10 rounded-full bg-[#E7B83D]/20 border border-[#E7B83D]/40 flex items-center justify-center text-[#E7B83D]">
-              <Coins className="w-5 h-5" />
-            </div>
-
-            <span className="text-[10px] bg-[#45C5AE]/10 border border-[#45C5AE]/30 text-[#45C5AE] px-2.5 py-1 rounded-full font-semibold uppercase tracking-wider">
-              CHECKING ACTIVITY
-            </span>
-          </div>
-        </div>
-
-        {/* Transaction 2: Crypto Received $1,000.00 */}
-        <div className="bg-[#1B2235] border border-white/10 rounded-2xl p-4 flex items-center justify-between relative shadow-lg">
-          <div className="space-y-1">
-            <p className="text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider flex items-center gap-1">
-              <ArrowDownLeft className="w-3 h-3 text-[#45C5AE]" />
-              CRYPTO RECEIVED
-            </p>
-            <div className="text-2xl font-black text-white flex items-baseline gap-1">
-              +$1,000.00
-            </div>
-            <div className="flex items-center gap-2 text-[11px] pt-1">
-              <span className="text-[#45C5AE] flex items-center gap-1 font-medium">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                Confirmed
-              </span>
-              
-            </div>
-          </div>
-
-          <div className="flex flex-col items-end justify-between self-stretch">
-            <div className="w-10 h-10 rounded-full bg-[#45C5AE]/20 border border-[#45C5AE]/40 flex items-center justify-center text-[#45C5AE]">
-              <span className="text-base font-bold">₮</span>
-            </div>
-
-            <span className="text-[10px] bg-[#45C5AE]/10 border border-[#45C5AE]/30 text-[#45C5AE] px-2.5 py-1 rounded-full font-semibold uppercase tracking-wider">
-              TRC20 RECEIVED
-            </span>
-          </div>
-        </div>
-
+        ))}
       </div>
 
       {/* Session Controls */}

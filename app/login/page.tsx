@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Lock, User, ShieldCheck, AlertCircle } from "lucide-react";
-import { setAuthenticated } from "@/lib/auth";
+import { authenticateUser } from "@/lib/auth";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -10,13 +10,14 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
-    if (username.trim() === "Ravithabura" && password === "Habura4123") {
-      setAuthenticated(true);
+    const accountId = authenticateUser(username, password);
+
+    if (accountId) {
       window.location.assign("/");
     } else {
       setIsLoading(false);
