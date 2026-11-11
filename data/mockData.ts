@@ -25,7 +25,7 @@ export const accountsData: Record<string, UserProfile> = {
     expensesToday: 0.00,
     currencySymbol: "$",
     accountType: "Available Checking Account",
-    showWarningTicker: true,
+    showWarningTicker: false,
     transactions: [
       {
         id: "tx-101",
@@ -39,12 +39,13 @@ export const accountsData: Record<string, UserProfile> = {
       {
         id: "tx-102",
         title: "CRYPTO RECEIVED",
-        amount: 1000.00,
+        amount: 1504.00,
         status: "Confirmed",
         timestamp: "5 minutes ago",
         category: "TRC20 RECEIVED",
         currency: "+$"
-      }
+      },
+
     ]
   },
   peter: {
